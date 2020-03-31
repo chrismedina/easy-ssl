@@ -8,7 +8,6 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
         if ( ! current_user_can( 'activate_plugins' ) )
             return;
 
-        //delete_option(''); easyssl_options   easyssl_network_options
         // Important: Check if the file is the one
         // that was registered during the uninstall hook.
         if ( __FILE__ != WP_UNINSTALL_PLUGIN )
@@ -40,16 +39,6 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
 /**
  *    END Register/Enqueue CSS and Javascript
  */
-
-    // AJAJ my_action  callback
-    function essl_ajax_essl_savesettings_action_callback() {
-        $essl = new ESSL_Controller('handle_ajaj', '');
-
-        $essl->ExecuteAction();
-
-        wp_die();
-    }
-    add_action( 'wp_ajax_essl_savesettings_action', 'essl_ajax_essl_savesettings_action_callback' );
 
 
     function essl_register_my_custom_menu_page()
