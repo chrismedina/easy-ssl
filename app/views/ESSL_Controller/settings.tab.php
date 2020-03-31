@@ -34,8 +34,8 @@
                         <?php
                         if(!is_ssl()) echo '<tr><td class="danger"><li>SSL is not detected - You may need to install an SSL Certificate</li></td></tr>';
                         ?>
-                            <tr><td class="warning"><li>Secure Cookies not enabled. </li></td></tr>
-                            <tr><td class="warning"><li>301 <strong>ALL</strong> HTTP to HTTPS history in Google (fixes 404 errors so you don't lose traffic)</li></td></tr>
+                            <tr><td class="alert-warning"><li>Secure Cookies not enabled. </li></td></tr>
+                            <tr><td class="alert-warning"><li>301 <strong>ALL</strong> HTTP to HTTPS history in Google (fixes 404 errors so you don't lose traffic)</li></td></tr>
 
                     </table>
                 </div>
