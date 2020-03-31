@@ -32,7 +32,7 @@
                     </table>
                     <table class="table table-bordered table-condensed">
                         <?php
-                        if(!is_ssl()) echo '<tr><td class="danger"><li>SSL is not detected - You may need to install an SSL Certificate</li></td></tr>';
+                        if(!is_ssl()) echo '<tr><td class="alert-danger"><li>SSL is not detected - You may need to install an SSL Certificate</li></td></tr>';
                         ?>
                             <tr><td class="alert-warning"><li>Secure Cookies not enabled. </li></td></tr>
                             <tr><td class="alert-warning"><li>301 <strong>ALL</strong> HTTP to HTTPS history in Google (fixes 404 errors so you don't lose traffic)</li></td></tr>
@@ -97,7 +97,7 @@
 
                             if(isset($viewmodel['serverconfig']['windows_complete']) && isset($viewmodel['serverconfig']['apache_complete']) ) {
                                 echo '<table class="table table-bordered table-condensed">';
-                                echo '<tr> <td class="danger"> <li>' . __('Both Apache and Windows detected with both files: web.config and .htaccess . You will have to manually configure your Server configuration.', 'easy-ssl' ) . ' </li> </td></tr>';
+                                echo '<tr> <td class="alert-danger"> <li>' . __('Both Apache and Windows detected with both files: web.config and .htaccess . You will have to manually configure your Server configuration.', 'easy-ssl' ) . ' </li> </td></tr>';
                                 echo '</table>';
                             }else{
 
