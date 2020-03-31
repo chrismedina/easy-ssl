@@ -4,10 +4,10 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
     die;
 }
 
-delete_opts('easyssl_options');
+delete_opts('essl');
 
 // for site options in Multisite
-delete_opts('easyssl_network_options');
+delete_opts('essl_network');
 
 function delete_opts( $option_name) {
     delete_option( $option_name );
