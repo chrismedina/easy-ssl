@@ -15,19 +15,19 @@
                 </div>
                 <div class="col-md-7">
                     <table class="table table-bordered table-condensed">
-                        <tr><td class="success">
+                        <tr><td class="alert-success">
                                         <?php
                                         printf(__("Did this plugin help?? Please %sWrite a Review%s to help other users who need SSL security", 'easy-ssl'), '<a href="#" id="essl_review">', '</a>') ;
                                         ?>
                             </td></tr>
                         <?php
 
-                        if(is_ssl()) echo '<tr><td class="success"><li>SSL is detected on your website!</li></td></tr>';
-                        if(isset($viewmodel['settings']['essl']['htaccess_ssl'])){ if($viewmodel['settings']['essl']['htaccess_ssl']) echo '<tr><td class="success"><li>.htaccess Force SSL <strong>is</strong> enabled!</li></td></tr>'; }
-                        if(isset($viewmodel['settings']['essl']['webconfig_ssl'])){ if($viewmodel['settings']['essl']['webconfig_ssl']) echo '<tr><td class="success"><li>web.config Force SSL <strong>is</strong> enabled!</li></td></tr>'; }
-                        if(isset($viewmodel['settings']['essl']['wp_ssl'])){ if($viewmodel['settings']['essl']['wp_ssl']) echo '<tr><td class="success"><li>Force SSL <strong>is</strong> enabled!</li></td></tr>'; }
-                        if(isset($viewmodel['settings']['essl']['301'])){ if($viewmodel['settings']['essl']['301']) echo '<tr><td class="success"><li>Standard 301 HTTP to HTTPS <strong>is</strong> enabled!</li></td></tr>'; }
-                        if(isset($viewmodel['settings']['essl']['hsts'])){ if($viewmodel['settings']['essl']['hsts']) echo '<tr><td class="success"><li>HTTP Strict Transport Security (HSTS) <strong>is</strong> enabled!</li></td></tr>'; }
+                        if(is_ssl()) echo '<tr><td class="alert-success"><li>SSL is detected on your website!</li></td></tr>';
+                        if(isset($viewmodel['settings']['essl']['htaccess_ssl'])){ if($viewmodel['settings']['essl']['htaccess_ssl']) echo '<tr><td class="alert-success"><li>.htaccess Force SSL <strong>is</strong> enabled!</li></td></tr>'; }
+                        if(isset($viewmodel['settings']['essl']['webconfig_ssl'])){ if($viewmodel['settings']['essl']['webconfig_ssl']) echo '<tr><td class="alert-success"><li>web.config Force SSL <strong>is</strong> enabled!</li></td></tr>'; }
+                        if(isset($viewmodel['settings']['essl']['wp_ssl'])){ if($viewmodel['settings']['essl']['wp_ssl']) echo '<tr><td class="alert-success"><li>Force SSL <strong>is</strong> enabled!</li></td></tr>'; }
+                        if(isset($viewmodel['settings']['essl']['301'])){ if($viewmodel['settings']['essl']['301']) echo '<tr><td class="alert-success"><li>Standard 301 HTTP to HTTPS <strong>is</strong> enabled!</li></td></tr>'; }
+                        if(isset($viewmodel['settings']['essl']['hsts'])){ if($viewmodel['settings']['essl']['hsts']) echo '<tr><td class="alert-success"><li>HTTP Strict Transport Security (HSTS) <strong>is</strong> enabled!</li></td></tr>'; }
                         ?>
                     </table>
                     <table class="table table-bordered table-condensed">
