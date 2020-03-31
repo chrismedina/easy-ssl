@@ -78,7 +78,7 @@ class ESSL_Controller extends ESSL_BaseController {
             //rewrite settings , remove
                 //remove file_copied_to, htaccess_ssl, and webconfig_ssl
             if(isset($options['essl']['htaccess_ssl'])) unset($options['essl']['htaccess_ssl']);
-            if(isset($options['essl']['htaccess_ssl'])) unset($options['essl']['htaccess_ssl']);
+            if(isset($options['essl']['webconfig_ssl'])) unset($options['essl']['webconfig_ssl']);
             if(isset($options['essl']['file_copied_to'])) unset($options['essl']['file_copied_to']);
             if(isset($options['essl'])) $model->update_essl_options( 'essl', $options['essl'] );
         }
@@ -243,12 +243,10 @@ class ESSL_Controller extends ESSL_BaseController {
                                     }
                                 }
                             }
-                            //echo "response was 301";
+
                         } else {  //Not a 301 redirect that we can test, and not 200
                             $headers = $this->get_headers_deux($home_url, 0);
-                            //echo "2nd GET_HEADERS_DEUX:";
-                            //var_dump( $headers);
-                            //echo '2nd request no 301 or 200 found';
+
                             if ($copied_file = $config_object->getCopiedFile()) {
                                 if ($config_object->rollbackCopying(ABSPATH, $copied_file, $copy_to_dir)) {
                                     $error_output .= __('Rolled back copy of config and restored original. Test of HTTPS after rewrite of config did not work successfully.', 'easy-ssl');

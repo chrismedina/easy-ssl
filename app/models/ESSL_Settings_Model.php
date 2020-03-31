@@ -25,10 +25,9 @@ class ESSL_Settings_Model{
     function get_essl_options()
     {
         $this->options['essl'] = get_option( 'essl' );
-        //$this->options['essl_network']  = get_option( 'essl_network' );
 
         if(empty($this->options['essl'])) $this->options['essl'] = $this->option_keys;
-        //if( count($this->options['essl_network']) <= 0 ) $this->options['essl'] = $this->option_keys;
+
 
         return $this->options;
     }
@@ -47,7 +46,6 @@ class ESSL_Settings_Model{
         }
 
         update_option( 'essl', $this->options['essl'] );
-        update_option( 'essl_network', $this->options['essl_network'] );
     }
 
     function update_essl_options( $option_name, $option_value)

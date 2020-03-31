@@ -6,9 +6,6 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 delete_opts('essl');
 
-// for site options in Multisite
-delete_opts('essl_network');
-
 function delete_opts( $option_name) {
     delete_option( $option_name );
 
