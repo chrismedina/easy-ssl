@@ -67,8 +67,6 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
         add_action( 'load-' . $menu, 'essl_load_admin_js' );
     }
 
-    //ToDo:  Put MVC Controller instantiation in area of essl_load_admin_js
-    //ToDo:  Currently MVC controller is running on pages that aren't the Easy SSL admin menu page
     function essl_initialize()
     {
         if(!is_admin()){
