@@ -109,40 +109,40 @@ class ESSL_Controller extends ESSL_BaseController {
         if( ! $know_config_already ) {
             $output = '<table class="table table-bordered table-condensed">';
             if( $config_check->isWindows() ){
-                $output .= '<tr> <td class="success"><li>' . __('Windows OS detected', 'easy-ssl' ) . ' </li> </td></tr>';
+                $output .= '<tr> <td class="alert-success"><li>' . __('Windows OS detected', 'easy-ssl' ) . ' </li> </td></tr>';
                 $windows = true;
                 //windows but no webconfig
                 if( !$config_check->webConfigExists()){
                     $critical_error = true;
-                    $output .= '<tr> <td class="warning"> <li>' . __('.webconfig file NOT found', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $output .= '<tr> <td class="alert-warning"> <li>' . __('.webconfig file NOT found', 'easy-ssl' ) . ' </li> </td></tr>';
                     //send ExampleConfig so they can do it manually
                 }else{
                     //webconfig found
                     $webconfig_file = true;
-                    $output .= '<tr> <td class="success"> <li>' . __('.webconfig file found in WP path', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $output .= '<tr> <td class="alert-success"> <li>' . __('.webconfig file found in WP path', 'easy-ssl' ) . ' </li> </td></tr>';
                 }
             }
 
             if( $config_check->isApache() ){
                 //apache but no htaccess
-                $output .= '<tr> <td class="success"> <li>' . __('Apache detected', 'easy-ssl' ) . ' </li> </td></tr>';
+                $output .= '<tr> <td class="alert-success"> <li>' . __('Apache detected', 'easy-ssl' ) . ' </li> </td></tr>';
                 $apache = true;
 
                 if( !$config_check->isModRewrite_module() ) {
                     $critical_error = true;
-                    $output .= '<tr> <td class="warning"> <li>' . __('Mod Rewrite NOT detected (.htaccess requires this)', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $output .= '<tr> <td class="alert-warning"> <li>' . __('Mod Rewrite NOT detected (.htaccess requires this)', 'easy-ssl' ) . ' </li> </td></tr>';
                 }else{
-                    $output .= '<tr><td class="success">  <li>' . __('Mod Rewrite detected (.htaccess usable)', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $output .= '<tr><td class="alert-success">  <li>' . __('Mod Rewrite detected (.htaccess usable)', 'easy-ssl' ) . ' </li> </td></tr>';
                 }
 
                 if( !$config_check->htaccessExists() ){
                     $critical_error = true;
-                    $output .= '<tr> <td class="warning"> <li>' . __('.htaccess file NOT found', 'easy-ssl' ) . '</li> </td></tr>';
+                    $output .= '<tr> <td class="alert-warning"> <li>' . __('.htaccess file NOT found', 'easy-ssl' ) . '</li> </td></tr>';
                     //send ExampleConfig so they can do it manually
                 }else{
                     //htaccess found
                     $htaccess_file = true;
-                    $output .= '<tr> <td class="success"> <li>' . __('.htaccess file found in WP path', 'easy-ssl' ) . '</li> </td></tr>';
+                    $output .= '<tr> <td class="alert-success"> <li>' . __('.htaccess file found in WP path', 'easy-ssl' ) . '</li> </td></tr>';
                 }
             }
             $output .= '</table>';
