@@ -13,7 +13,7 @@ class ESSL_Config {
     protected $modify_error_output = '';
     protected $rollback_error = '';
 
-    protected $config_file = '';
+    protected $config_file = 'blank';
 
     protected $copied_file = '';
     protected $copied_files = [] ;

@@ -60,7 +60,7 @@ class ESSL_Controller extends ESSL_BaseController {
                 $copy_file_dir = substr($copied_file, 0, $copy_file_dir_pos);
 
             //is it .htaccess or web.config file
-            if(strpos($copied_file, '.htaccess') >= 0) {
+            if( strpos($copied_file, '.htaccess') !== FALSE ) {
                 $specify_config_filename = '.htaccess';
             }elseif(strpos($copied_file, 'web.config') >= 0){
                 $specify_config_filename = 'web.config';
@@ -68,6 +68,7 @@ class ESSL_Controller extends ESSL_BaseController {
                 $this->serverconfiguration();
                 return;
             }
+
 
             $config = new ESSL_Config;
             if( ! $config->rollbackCopying( ABSPATH, $copied_file, $copy_file_dir, $specify_config_filename ) )
