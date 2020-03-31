@@ -3,14 +3,14 @@
 class ESSL_Controller extends ESSL_BaseController {
 
     protected  $options = array(
-        'essl_network' => '',
-        'essl' => '',
+        'essl_network' => [],
+        'essl' => [],
         'transient' => [ 'essl_easyssl' => '']
     );
 
     protected $time_length  = 300;
 
-    protected $option_keys = [ 'wp_ssl' => 'off' , 'htaccess_ssl' => 'off', 'webconfig_ssl' => 'off', '301' => 'off', 'hsts' => 'off'  ];
+    protected $option_keys = [ 'file_copied_to' => '', 'wp_ssl' => 'off' , 'htaccess_ssl' => 'off', 'webconfig_ssl' => 'off', '301' => 'off', 'hsts' => 'off'  ];
 
     protected $response = [];
 
@@ -343,25 +343,6 @@ class ESSL_Controller extends ESSL_BaseController {
             else
                 return $var;
         }
-    }
-
-    //Asynchronous javascript and JSON
-    function handle_ajaj()
-    {
-        echo json_encode($_POST);
-    }
-
-    function save() {
-        //Protect against CSRF
-        if (!isset($_POST['essl_aiowz_tkn'])) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-        if (!wp_verify_nonce($_POST['essl_aiowz_tkn'],'essl-csrf-save-nonce')) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-
-    }
-
-    function update_action() {
-        if (!isset($_POST['essl_aiowz_tkn_update'])) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-        if (!wp_verify_nonce($_POST['essl_aiowz_tkn_update'],'csrf-nonce-search-update')) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-
     }
 
 }
