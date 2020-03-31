@@ -27,8 +27,8 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
 
     function essl_enqueue_admin_js_css()
     {
-        //wp_enqueue_script( 'bootstrap', plugin_dir_url(ESSL_FILE) . ESSL_PLG_FOLDER_NAME . '/admin/js/bootstrap.min.js', array('jquery'), null, true );
-        //wp_enqueue_style( 'bootstrap.min', plugin_dir_url(ESSL_FILE) . ESSL_PLG_FOLDER_NAME . '/admin/css/bootstrap.min.css', array(), null);
+        wp_enqueue_script( 'bootstrap', plugin_dir_url(ESSL_FILE) . ESSL_PLG_FOLDER_NAME . '/admin/js/bootstrap.min.js', array('jquery'), null, true );
+        wp_enqueue_style( 'bootstrap.min', plugin_dir_url(ESSL_FILE) . ESSL_PLG_FOLDER_NAME . '/admin/css/bootstrap.min.css', array(), null);
 
         wp_register_style( 'custom_wp_admin_css', plugin_dir_url(ESSL_FILE) . ESSL_PLG_FOLDER_NAME . '/admin/css/style.css',false);
         wp_enqueue_style( 'custom_wp_admin_css' );
