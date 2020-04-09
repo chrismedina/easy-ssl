@@ -8,10 +8,10 @@
 
 class ESSL_Config {
 
-    protected $copy_error_output = '';
-    protected $write_error_output = '';
-    protected $modify_error_output = '';
-    protected $rollback_error = '';
+    protected $copy_error_output = false;
+    protected $write_error_output = false;
+    protected $modify_error_output = false;
+    protected $rollback_error = false;
 
     protected $config_file = 'blank';
 
@@ -20,6 +20,11 @@ class ESSL_Config {
 
     function backupConfigFile( $source_dir, $destination_dir)
     {
+        if( !is_admin() || !current_user_can( 'update_plugins' )){
+            $this->copy_error_output = 'Sorry you do not have access to this feature. Please login with appropriate permission';
+            return false;
+        }
+
         $source = $source_dir . $this->config_file;
         $copy_to = $destination_dir . DS . $this->config_file . '-' . date("m.d.y-H.m.s");
         $this->copy_error_output = $this->errorUponCopying( $source, $destination_dir , $copy_to);
@@ -27,6 +32,10 @@ class ESSL_Config {
     }
 
     public function errorUponCopying( $source, $copy_to_dir, $copy_to){
+        if( !is_admin() || !current_user_can( 'update_plugins' )){
+            return 'Sorry you do not have access to this feature. Please login with appropriate permission';
+        }
+
         if( file_exists($copy_to_dir) && file_exists( $source ) ){
             if( ! copy( $source, $copy_to ) ) {
                 $error_output = __('Error occurred when copying file. Please make sure permissions are set properly.');
@@ -44,6 +53,11 @@ class ESSL_Config {
 
     public function rollbackCopying( $original_source_path, $copied_file = '', $rollback_directory, $specify_config_filename = false )
     {
+        if( !is_admin() || !current_user_can( 'update_plugins' )){
+            $this->rollback_error = 'Sorry you do not have access to this feature. Please login with appropriate permission';
+            return false;
+        }
+
         if( file_exists($copied_file) && file_exists($rollback_directory) ){
             if($specify_config_filename) return rename( $copied_file, $original_source_path . $specify_config_filename );
             return rename( $copied_file, $original_source_path . $this->config_file );
@@ -61,6 +75,11 @@ class ESSL_Config {
 
     public function writeFreshConfig($filename, $content, $overwrite = false)
     {
+        if( !is_admin() || !current_user_can( 'update_plugins' )){
+            $this->write_error_output = 'Sorry you do not have access to this feature. Please login with appropriate permission';
+            return false;
+        }
+
         try{
             $silly_error = 'silly error';
             set_error_handler( array( $this, 'customErrorHandler' ) );

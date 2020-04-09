@@ -5,7 +5,7 @@
         <?php
         if(PHP_VERSION < ESSL_REQUIRED_PHP_VERSION ){
             ?>
-            <li><strong>PHP <?php echo ESSL_REQUIRED_PHP_VERSION; ?>+</strong>
+            <li><strong>PHP <?php echo esc_html(ESSL_REQUIRED_PHP_VERSION); ?>+</strong>
                 <em>(You're running version <?php echo PHP_VERSION; ?>)</em>
             </li>
 
@@ -14,7 +14,7 @@
         <?php
         if($wp_version < ESSL_REQUIRED_WP_VERSION) {
             ?>
-            <li><strong>WordPress <?php echo ESSL_REQUIRED_WP_VERSION; ?>+</strong>
+            <li><strong>WordPress <?php esc_html(ESSL_REQUIRED_WP_VERSION); ?>+</strong>
                 <em>(You're running version <?php echo esc_html($wp_version); ?>)</em>
             </li>
         <?php

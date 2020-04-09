@@ -23,7 +23,7 @@ class ESSL_Loader {
             $this->controller = $this->urlvalues['controller'];
         }
 
-        if(!isset($this->urlvalues['action']))
+        if( !isset($this->urlvalues['action']) )
             $this->urlvalues['action'] = 'index';
 
         if($this->urlvalues['action'] == "") {

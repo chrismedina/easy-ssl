@@ -19,7 +19,12 @@ class ESSL_htaccess extends ESSL_Config implements ESSL_IServerConfig
 
     function getErrorOutput()
     {
-        return $this->copy_error_output;
+        $all_errors = false;
+
+        if( !empty( $this->write_error_output ))    $all_errors .= $this->write_error_output;
+        if( !empty( $this->copy_error_output ))     $all_errors .= $this->copy_error_output;
+
+        return $all_errors;
     }
 
     function getWriteError()
@@ -36,6 +41,11 @@ class ESSL_htaccess extends ESSL_Config implements ESSL_IServerConfig
 
     function writeAppendEnvVariable( $file, $env_variable, $value )
     {
+        if( !is_admin() || !current_user_can( 'update_plugins' )){
+            $this->write_error_output = 'Sorry you do not have access to this feature. Please login with appropriate permission';
+            return false;
+        }
+
         if( !file_exists($file)) return false;
 
         //SetEnv HTTP_MOD_REWRITE on

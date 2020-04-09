@@ -1,94 +1,121 @@
 <?php
 
-class ESSL_Controller extends ESSL_BaseController {
+class ESSL_Controller extends ESSL_BaseController
+{
 
     protected  $options = array(
-        'essl_network' => [],
         'essl' => [],
-        'transient' => [ 'essl_easyssl' => '']
+        'essl_file'
     );
 
     protected $time_length  = 300;
 
-    protected $option_keys = [ 'file_copied_to' => '', 'wp_ssl' => 'off' , 'htaccess_ssl' => 'off', 'webconfig_ssl' => 'off', '301' => 'off', 'hsts' => 'off'  ];
-
     protected $response = [];
 
-    protected $post_actions = [ 'serverconfiguration', 'writeconfiguration', ''];
-
     //Default view
-    function index() {
-        //Protect against CSRF
-        if(isset($_POST['action'])){
-            if (!isset($_POST['essl_aiowz_tkn'])) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-            if (!wp_verify_nonce($_POST['essl_aiowz_tkn'],'essl-csrf-index-nonce')) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-
-        }
-
+    function index()
+    {
         $model = new ESSL_Settings_Model;
-        //detect if $_POST request
-        if(isset($_POST)){
-            if(count($_POST)){
-                $model->getAllSettings();
-                //reset wp_ssl and hsts
-                $model->resetFreeSettings();
-                $model->set_essl_options();
-            }
+        $errors = [];
+
+        // $_POST exists ?
+        if( ESSL_Form_Validation::exists() ) {
+            //Permissions ?
+            if( !is_admin() || ! current_user_can( 'update_plugins' ))  wp_die( 'Sorry you do not have access to this feature. Please login with appropriate permission' );
+
+            //NONCE check
+            if (!isset($_POST['essl_aiowz_tkn'])) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+            if (!wp_verify_nonce($_POST['essl_aiowz_tkn'],'essl-csrf-index-nonce')) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+
+            //get existing options
+            $option_array = $model->get_essl_options();
+
+            if( !isset($_POST['wp_ssl'])) $option_array['wp_ssl'] = false;
+            if( !isset($_POST['hsts'])) $option_array['hsts'] = false;
+
+            $option_array = array_merge( $option_array, $_POST );
+
+            //add or update option
+            $model->set_essl_options( $option_array );
+
         }
 
-        $this->ReturnView( array( 'settings' => $model->getAllSettings() ), true);
+        $file_name = ( $model->get_file_backup_option() !== FALSE ) ?  true : false;
+
+        $this->ReturnView( array( 'settings' => [ 'essl' => $model->get_essl_options(),
+                                                  'essl_file' => $file_name ],
+                                                  'errors' => $model->getErrors() ), true   );
     }
 
     //REVERT
-    function revertconfiguration()
+    function revert_configuration()
     {
-        if (!isset($_POST['essl_aiowz_rc_tkn'])) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-        if (!wp_verify_nonce($_POST['essl_aiowz_rc_tkn'],'essl-csrf-rc-nonce')) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+        //Permissions ?
+        if( !is_admin() || ! current_user_can( 'update_plugins' ))  wp_die( 'Sorry you do not have access to this feature. Please login with appropriate permission' );
+        if ( !isset( $_POST['essl_aiowz_rc_tkn'] )) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+        if ( !wp_verify_nonce( $_POST['essl_aiowz_rc_tkn'],'essl-csrf-rc-nonce' )) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
 
-        $model = new ESSL_Settings_Model;
-        $options = $model->get_essl_options();
+            $model = new ESSL_Settings_Model;
+            $backup_file = $model->get_file_backup_option();
 
-        if(isset($options['essl']['file_copied_to'])){
-            $copied_file = $options['essl']['file_copied_to'];
+            if( isset( $backup_file )){
+                $copy_file_dir_pos = strrpos( $backup_file, DIRECTORY_SEPARATOR );
+                if( !$copy_file_dir_pos ){
+                    $this->response['serverconfig']['output']['revert'] = __("Could not revert due to DIRECTORY_SEPARATOR / file not found issue", 'easy-ssl');
+                    $this->server_configuration();
+                    return;
+                }
 
-            $copy_file_dir_pos = strrpos($copied_file, DIRECTORY_SEPARATOR);
-            if(!$copy_file_dir_pos){
-                $this->response['serverconfig']['output'] = __("Could not revert due to DIRECTORY_SEPARATOR issue", 'easy-ssl');
-                $this->serverconfiguration();
-                return;
+                $copy_file_dir = substr( $backup_file, 0, $copy_file_dir_pos );
+
+                //is it .htaccess or web.config file
+                if( strpos( $backup_file, '.htaccess') !== FALSE ) {
+                    $specify_config_filename = '.htaccess';
+                }elseif( strpos( $backup_file, 'web.config' ) !== FALSE ){
+                    $specify_config_filename = 'web.config';
+                }else{
+                    $this->server_configuration();
+                    return;
+                }
+
+                $config = new ESSL_Config;
+                if( ! $config->rollbackCopying( ABSPATH, $backup_file, $copy_file_dir, $specify_config_filename ) )
+                {
+                    $this->response['serverconfig']['output']['revert'] = $config->getRollbackError();
+                    $this->server_configuration();
+                    return;
+                }
+
+                //delete backup file option
+                $model->delete_file_backup_option();
+
+                //htaccess_ssl /  webconfig_ssl option , turn off/false
+                $essl_options = $model->get_essl_options();
+                if(isset($essl_options['htaccess_ssl'])) $essl_options['htaccess_ssl'] = false;
+                if(isset($essl_options['webconfig_ssl'])) $essl_options['webconfig_ssl'] = false;
+
+                $model->set_essl_options( $essl_options );
+
+                $this->response['errors'] = $model->getErrors();
             }
-                $copy_file_dir = substr($copied_file, 0, $copy_file_dir_pos);
-
-            //is it .htaccess or web.config file
-            if( strpos($copied_file, '.htaccess') !== FALSE ) {
-                $specify_config_filename = '.htaccess';
-            }elseif(strpos($copied_file, 'web.config') >= 0){
-                $specify_config_filename = 'web.config';
-            }else{
-                $this->serverconfiguration();
-                return;
-            }
 
 
-            $config = new ESSL_Config;
-            if( ! $config->rollbackCopying( ABSPATH, $copied_file, $copy_file_dir, $specify_config_filename ) )
-            {
-                $this->response['serverconfig']['output'] = $config->getRollbackError();
-            }
-
-            //rewrite settings , remove
-                //remove file_copied_to, htaccess_ssl, and webconfig_ssl
-            if(isset($options['essl']['htaccess_ssl'])) unset($options['essl']['htaccess_ssl']);
-            if(isset($options['essl']['webconfig_ssl'])) unset($options['essl']['webconfig_ssl']);
-            if(isset($options['essl']['file_copied_to'])) unset($options['essl']['file_copied_to']);
-            if(isset($options['essl'])) $model->update_essl_options( 'essl', $options['essl'] );
-        }
-
-        $this->serverconfiguration();
+        $this->server_configuration( false );
     }
 
-    function serverconfiguration( $know_config_already = false)
+    //Check current web server, OS, and for .htaccess or web.confg
+    function server_configuration( $know_config_already = false)
     {
+        //Permissions ?
+        if( !is_admin() || ! current_user_can( 'update_plugins' ))  wp_die( 'Sorry you do not have access to this feature. Please login with appropriate permission' );
+
+        if( isset( $_POST['action'] )){
+            if( $_POST['action']== 'server_configuration') {
+                if (!isset($_POST['essl_aiowz_sc_tkn'])) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+                if (!wp_verify_nonce($_POST['essl_aiowz_sc_tkn'],'essl-csrf-sc-nonce')) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+            }
+        }
+
         $config_check = new ESSL_ServerConfig;
         $htaccess_file = false;
         $webconfig_file = false;
@@ -96,70 +123,57 @@ class ESSL_Controller extends ESSL_BaseController {
         $windows = false;
         $example = '';
         $critical_error = false;
-        $output = '';
-
-        //Protect against CSRF
-        if(isset($_POST['action'])){
-            if( $_POST['action']== 'serverconfiguration') {
-                if (!isset($_POST['essl_aiowz_sc_tkn'])) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-                if (!wp_verify_nonce($_POST['essl_aiowz_sc_tkn'],'essl-csrf-sc-nonce')) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-            }
-        }
-
 
         if( ! $know_config_already ) {
-            $output = '<table class="table table-bordered table-condensed">';
             if( $config_check->isWindows() ){
-                $output .= '<tr> <td class="alert-success"><li>' . __('Windows OS detected', 'easy-ssl' ) . ' </li> </td></tr>';
+                $this->response['serverconfig']['output']['success'][] = __('Windows OS detected', 'easy-ssl' );
                 $windows = true;
                 //windows but no webconfig
                 if( !$config_check->webConfigExists()){
                     $critical_error = true;
-                    $output .= '<tr> <td class="alert-warning"> <li>' . __('.webconfig file NOT found', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $this->response['serverconfig']['output']['warning'][] =  __('web.config file NOT found', 'easy-ssl' );
                     //send ExampleConfig so they can do it manually
                 }else{
                     //webconfig found
                     $webconfig_file = true;
-                    $output .= '<tr> <td class="alert-success"> <li>' . __('.webconfig file found in WP path', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $this->response['serverconfig']['output']['success'][] = __('.webconfig file found in WP path', 'easy-ssl' );
                 }
             }
 
             if( $config_check->isApache() ){
                 //apache but no htaccess
-                $output .= '<tr> <td class="alert-success"> <li>' . __('Apache detected', 'easy-ssl' ) . ' </li> </td></tr>';
+                $this->response['serverconfig']['output']['success'][] = __('Apache detected', 'easy-ssl' );
                 $apache = true;
 
                 if( !$config_check->isModRewrite_module() ) {
                     $critical_error = true;
-                    $output .= '<tr> <td class="alert-warning"> <li>' . __('Mod Rewrite NOT detected (.htaccess requires this)', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $this->response['serverconfig']['output']['warning'][]= __('Mod Rewrite NOT detected (.htaccess requires this)', 'easy-ssl' );
                 }else{
-                    $output .= '<tr><td class="alert-success">  <li>' . __('Mod Rewrite detected (.htaccess usable)', 'easy-ssl' ) . ' </li> </td></tr>';
+                    $this->response['serverconfig']['output']['success'][]= __('Mod Rewrite detected (.htaccess usable)', 'easy-ssl' );
                 }
 
                 if( !$config_check->htaccessExists() ){
                     $critical_error = true;
-                    $output .= '<tr> <td class="alert-warning"> <li>' . __('.htaccess file NOT found', 'easy-ssl' ) . '</li> </td></tr>';
+                    $this->response['serverconfig']['output']['warning'][] = __('.htaccess file NOT found', 'easy-ssl' );
                     //send ExampleConfig so they can do it manually
                 }else{
                     //htaccess found
                     $htaccess_file = true;
-                    $output .= '<tr> <td class="alert-success"> <li>' . __('.htaccess file found in WP path', 'easy-ssl' ) . '</li> </td></tr>';
+                    $this->response['serverconfig']['output']['success'][] = __('.htaccess file found in WP path', 'easy-ssl' );
                 }
             }
-            $output .= '</table>';
         }
 
-
         $model = new ESSL_Settings_Model;
-        $this->response['settings'] = $model->getAllSettings();
+        $this->response['settings']['essl'] = $model->get_essl_options();
+        $this->response['settings']['essl_file'] = $model->get_file_backup_option();
 
         $apache_complete = false;
-        if($apache && $htaccess_file) $apache_complete = true;
+        if( $apache && $htaccess_file )  $apache_complete = true;
 
         $windows_complete = false;
-        if($windows && $webconfig_file) $windows_complete = true;
+        if( $windows && $webconfig_file ) $windows_complete = true;
 
-        $this->response['serverconfig']['output'] = $output;
         $this->response['serverconfig']['example'] = $example;
         $this->response['serverconfig']['critical'] = $critical_error;
         $this->response['serverconfig']['htaccess'] = $htaccess_file;
@@ -169,13 +183,16 @@ class ESSL_Controller extends ESSL_BaseController {
         if($apache_complete) $this->response['serverconfig']['apache_complete'] = $apache_complete;
         if($windows_complete) $this->response['serverconfig']['windows_complete'] = $windows_complete;
 
-        $this->ReturnView($this->response, true);
+        $this->ReturnView( $this->response, true );
     }
 
-    function writeconfiguration()
+    function write_configuration()
     {
-        if (!isset($_POST['essl_aiowz_wc_tkn'])) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
-        if (!wp_verify_nonce($_POST['essl_aiowz_wc_tkn'],'essl-csrf-wc-nonce')) die("<br><br>Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
+        //Permissions ?
+        if( !is_admin() || ! current_user_can( 'update_plugins' ))  wp_die( 'Sorry you do not have access to this feature. Please login with appropriate permission' );
+
+        if ( !isset( $_POST['essl_aiowz_wc_tkn'] )) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! Not set. " );
+        if ( !wp_verify_nonce( $_POST['essl_aiowz_wc_tkn'],'essl-csrf-wc-nonce' )) die("Hmm .. looks like you didn't send any credentials.. No CSRF for you! ");
 
         $htaccess = false;
         $successful = false;
@@ -195,9 +212,7 @@ class ESSL_Controller extends ESSL_BaseController {
                 if (get_class($config_object) == 'ESSL_htaccess') {
                     $htaccess = true;
                     if (!$config_check->isModRewrite_module()) {
-                        //echo 'APPENDING - MOD REWRITE CHECK before attemtping a write:' . $config_check->isModRewrite();
-                        //Give it one last try by adding environment variable to
-                        if ($config_object->writeAppendEnvVariable(ABSPATH . '.htaccess', 'HTTP_MOD_REWRITE', 'on')) {
+                        if ( $config_object->writeAppendEnvVariable( ABSPATH . '.htaccess', 'HTTP_MOD_REWRITE', 'on' )) {
                             if (!$config_check->isModRewrite()) {
                                 $config_object->setCopyErrorOutput(__('Appended to .htaccess but still no environment variable loaded. HTACCESS not working. ', 'easy-ssl'));
                             }
@@ -206,32 +221,25 @@ class ESSL_Controller extends ESSL_BaseController {
                 }
 
                 $error_output = $config_object->getErrorOutput();
-                if (!$error_output) {
+                if ( !$error_output ) {
                     //write fresh file
-                    if ($config_object->writeFreshConfig(ABSPATH . $config_object->getConfigFilename(), $config_object->exampleConfig())) {
-                        //wrote successfully
+                    if ( $config_object->writeFreshConfig(ABSPATH . $config_object->getConfigFilename(), $config_object->exampleConfig() )) {
 
                         //if writing new config, test accessing home URL in a new request (test twice)
                         $home_url = get_home_url();
 
-                        /*$context = stream_context_create(array(
-                            'http' => array(
-                                'ignore_errors' => true
-                            )
-                        ));*/
+                        $the_content = @file_get_contents( $home_url );
 
-                        $the_content = @file_get_contents($home_url);
-
-                        if (strpos($http_response_header[0], '200') && strpos($home_url, 'https') == 0) {
+                        if ( strpos( $http_response_header[0], '200' ) && strpos( $home_url, 'https') == 0 ) {
                             $successful = true;
-                        } elseif (strpos($http_response_header[0], '301')) {
+                        } elseif ( strpos( $http_response_header[0], '301' )) {
                             $headers = $this->get_headers_deux($home_url, 1);
 
                             //only returning 301 and not content
                             if (isset($headers['Location'])) {
-                                $the_content = @file_get_contents($headers['Location']);
+                                $the_content = @file_get_contents( $headers['Location'] );
                                 //sleep(1);
-                                if (strpos($http_response_header[0], '200')) {
+                                if ( strpos( $http_response_header[0], '200' )) {
                                     $successful = true;
                                 } else {
                                     $error_output .= 'Did not get a positive 200 response so this is a problem. ROLLING BACK!';
@@ -269,42 +277,36 @@ class ESSL_Controller extends ESSL_BaseController {
 
                     //ToDo: if write fresh fails, try to modify
                 }
-
-
             } else {
                 $error_output = '.htaccess file was not found or mod_rewrite was not enabled in apache';
             }
 
             if ($successful) {
                 $model = new ESSL_Settings_Model;
+
                 if($htaccess){
-                    $_POST['htaccess_ssl'] = 'on';
-                }else{
-                    $_POST['webconfig_ssl'] = 'on';
-                }
-
-                $copied_file = $config_object->getCopiedFile();
-                $_POST['file_copied_to'] = $copied_file;
-
-                if(isset($_POST)){
-                    if(count($_POST)){
-                        $model->set_essl_options();
-                    }
-                }
-
-                if ($htaccess) {
+                    $option_array['htaccess_ssl'] = true;
                     $this->response['serverconfig']['apache_complete'] = true;
-                } else {
-                    //windows
+                }else{ //windows
+                    $option_array['webconfig_ssl'] = true;
                     $this->response['serverconfig']['windows_complete'] = true;
                 }
+
+                //get existing options
+                $model->get_essl_options();
+                //add or update option
+                $model->set_essl_options( $option_array );
+
+                $copied_file = $config_object->getCopiedFile();
+
+                $model->set_file_backup_option( [ 'essl_file' => $copied_file ] );
             }
 
             $this->response['serverconfig']['errors'] = $error_output;
-            $this->serverconfiguration();
+            $this->server_configuration();
         }else{
             $this->response['serverconfig']['errors'] = __('Required functions: fsockopen and/or file_get_contents were not found. These are required to properly test HTTPS using web config files.', 'easy-ssl');
-            $this->serverconfiguration();
+            $this->server_configuration();
         }
     }
 

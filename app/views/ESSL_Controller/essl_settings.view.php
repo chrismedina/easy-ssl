@@ -20,14 +20,15 @@
         <?php
             if( array_key_exists( 'notification', $viewmodel ) ) {
                 echo '<div class="updated"><p><strong>' . __($viewmodel['notification'], 'menu-test') . '</strong></p></div>';
-            }
-
-            echo "<h3>" . __( 'Easy SSL', 'easy-ssl' ) . "</h3>";
+            }?>
+        <h3>
+        <?php
+            esc_html_e( 'Easy SSL', 'easy-ssl' );
         ?>
+            </h3>
 
         <div class="tabs standard">
             <ul class="tab-links">
-
                 <li class="active"><a href="#tab1">Easy SSL Settings</a></li>
                 <!--<li><a href="#tab2">Image Size / SEO Settings</a></li>-->
 
@@ -36,12 +37,21 @@
                 if( array_key_exists( 'tabs', $viewmodel )) {
                     foreach ( $viewmodel["tabs"] as $tab ) {
                         $i++;
-                        //Default active tab is the first tab
-                        $tabs .=  ( $i==1 ?  '<li class="active">' : '<li>' );
-                        $tabs .=  '<a href="#tab' . $i . '">' . $tab["title"] . "</a></li>";
-                    }
 
-                    echo $tabs;
+                        //Default active tab is the first tab
+                        if($i==1){ ?>
+                            <li class="active">
+                            <?php
+                        } else{?>
+                            <li>
+                            <?php
+                            } ?>
+
+                        <a href="#tab<?php echo esc_html($i);?>">
+                            <?php echo esc_html($tab["title"]);?>
+                        </a></li>
+                <?php
+                    }
                 }
             ?>
             </ul>

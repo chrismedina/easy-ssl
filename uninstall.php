@@ -4,14 +4,11 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
     die;
 }
 
-delete_opts('essl');
+if ( ! current_user_can( 'delete_plugins' ) )
+    return;
 
-function delete_opts( $option_name) {
-    delete_option( $option_name );
+$essl_model = new ESSL_Settings_Model;
 
-
-    //https://developer.wordpress.org/plugins/plugin-basics/uninstall-methods/  Multisite
-    delete_site_option( $option_name );
-}
+$essl_model->deleteOptions();
 
 ?>

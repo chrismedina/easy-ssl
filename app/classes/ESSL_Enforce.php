@@ -16,24 +16,22 @@ class ESSL_Enforce
         $essl_model = new ESSL_Settings_Model();
         $this->essl_options = $essl_model->get_essl_options();
 
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || $_SERVER['SERVER_PORT'] == 443)
+        if( isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || $_SERVER['SERVER_PORT'] == 443 )
             $_SERVER['HTTPS'] = 'on';
 
-        if(isset( $this->essl_options['essl']['wp_ssl'] ) || isset( $this->essl_options['essl']['htaccess_ssl'] ) || isset( $this->essl_options['essl']['webconfig_ssl']) )
+        if(isset( $this->essl_options['wp_ssl'] ) || isset( $this->essl_options['htaccess_ssl'] ) || isset( $this->essl_options['webconfig_ssl'] ))
         {
             if(! is_ssl() ) {
-                if(isset($this->essl_options['essl']['wp_ssl'])){
-                    if ($this->essl_options['essl']['wp_ssl'] == "on") {
-                        //echo "<!-- WP Easy SSL on -->";
+                if( isset( $this->essl_options['wp_ssl'] )){
+                    if ($this->essl_options['wp_ssl']) {
                         add_action('template_redirect', array($this, 'wp_ssl'));
                     }
                 }
             }
         }
 
-        if(isset($this->essl_options['essl']['hsts'])){
-            if ($this->essl_options['essl']['hsts'] == 'on') {
-                //echo "<!-- Easy SSL  HSTS on -->";
+        if( isset( $this->essl_options['hsts'] )){
+            if ( $this->essl_options['hsts'] == 'on' ) {
                 add_action('send_headers', array($this, 'hsts'));
             }
         }
@@ -50,8 +48,8 @@ class ESSL_Enforce
 
     public function wp_ssl()
     {
-        if (!is_ssl()) {
-            wp_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], 301);
+        if ( !is_ssl() ) {
+            wp_redirect( 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], 301 );
             exit();
         }
     }

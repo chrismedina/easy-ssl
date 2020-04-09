@@ -13,11 +13,8 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
         if ( __FILE__ != WP_UNINSTALL_PLUGIN )
             return;
     }
-/**
- *    Register/Enqueue CSS and Javascript
- */
 
-    // This function is only called when our plugin's page loads!
+//  BEGIN Register/Enqueue CSS and Javascript
     function essl_load_admin_js(){
         // Unfortunately we can't just enqueue our scripts here - it's too early. So register against the proper action hook to do it
         add_action( 'admin_enqueue_scripts', 'essl_enqueue_admin_js_css' );
@@ -35,10 +32,7 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
         wp_register_style( 'custom_wp_admin_toggle_css', plugin_dir_url(ESSL_FILE) . ESSL_PLG_FOLDER_NAME . '/admin/css/toggle.css',false);
         wp_enqueue_style( 'custom_wp_admin_toggle_css' );
     }
-
-/**
- *    END Register/Enqueue CSS and Javascript
- */
+//  END Register/Enqueue CSS and Javascript
 
 
     function essl_register_my_custom_menu_page()
@@ -49,7 +43,7 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
             'manage_options',
             'essl_menu_page',
             'essl_initialize',
-            'dashicons-shield',//plugins_url( 'easy-ssl/images/icon.png' ),
+            'dashicons-shield',
             6
         );
 
@@ -58,27 +52,35 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
 
     function essl_initialize()
     {
-        if(!is_admin()){
-            wp_die(__('Easy SSL is an admin only feature. Please login as admin.', 'easy-ssl'));
+        if( !is_admin() ){
+            wp_die( __('Easy SSL is an admin only feature. Please login as admin.', 'easy-ssl'));
             exit;
         }
 
-        $loader = new ESSL_Loader($_POST);
+        // prevent Local File Inclusion
+        $allowed_controllers = [ 'ESSL_Controller' ];
+
+        if( isset( $_POST['controller'] )) {
+            if( !in_array( $_POST['controller'], $allowed_controllers )) {
+                wp_die( __('You do not have permission or that does not exist') );
+            }
+        }
+
+        $loader = new ESSL_Loader( $_POST );
         $controller =  $loader->CreateController();
         $controller->ExecuteAction();
     }
 
     // Load TextDomain and Menu for Easy SSL
     function essl_initial() {
-        load_plugin_textdomain('easy-ssl');
+        load_plugin_textdomain( 'easy-ssl' );
         add_action( 'admin_menu', 'essl_register_my_custom_menu_page' , 1000 );
     }
 
     function essl_activate()
     {
-            // Error message to user if multisite
         if (is_network_admin()) {
-            wp_die(__('Easy SSL is not compatible yet with WP Multisite. The PRO version will offer this feature soon.', 'easy-ssl'));
+            wp_die( __( 'Easy SSL is not compatible yet with WP Multisite. The PRO version will offer this feature soon.' , 'easy-ssl'));
         }
     }
 
@@ -98,9 +100,7 @@ require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'loader.php' );
     }
 
 $essl = ESSL_Enforce::getInstance();
-
 add_action( 'plugins_loaded', 'essl_initial' );
-
 add_action( 'activated_plugin', 'essl_activate_redirect' );
 
 register_activation_hook(   __FILE__, 'essl_activate' );

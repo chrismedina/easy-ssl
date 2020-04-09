@@ -17,8 +17,6 @@ class ESSL_ServerConfig
         //copy any pre-existing .htaccess or web.config
         if( $this->isWindows() && $this->webConfigExists() ){
             $webconfig = new ESSL_Webconfig;
-            //attempt to write
-            //$webconfig->backupConfigFile( $this->absolute_path ,$copy_to_directory, array ($this, 'errorUponCopying') ) ;
 
             $webconfig->backupConfigFile( $this->absolute_path ,$copy_to_directory );
             if( ! $webconfig->getErrorOutput() ) return $webconfig;
@@ -26,8 +24,6 @@ class ESSL_ServerConfig
 
         if( $this->isApache() && $this->htaccessExists() ){
             $htaccess = new ESSL_htaccess;
-            //attempt to write
-            //$webconfig->backupConfigFile( $this->absolute_path ,$copy_to_directory, array ($this, 'errorUponCopying') ) ;
 
             $htaccess->backupConfigFile( $this->absolute_path ,$copy_to_directory );
             if( ! $htaccess->getErrorOutput() ) return $htaccess;
